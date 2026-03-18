@@ -1,0 +1,10 @@
+target/
+*.class
+*.jar
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+*.log
+application-local.properties
