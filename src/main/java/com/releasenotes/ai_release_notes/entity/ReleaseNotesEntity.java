@@ -1,11 +1,15 @@
 package com.releasenotes.ai_release_notes.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "release_notes_entity")
 public class ReleaseNotesEntity {
 
     @Id
@@ -17,6 +21,8 @@ public class ReleaseNotesEntity {
     private String docs;
     private String refactors;
     private String others;
+    @Column(columnDefinition = "TEXT")
+    private String aiNotes;
 
     public Long getId() {
         return id;
@@ -65,4 +71,12 @@ public class ReleaseNotesEntity {
     public void setOthers(String others) {
         this.others = others;
     }
+
+	public String getAiNotes() {
+		return aiNotes;
+	}
+
+	public void setAiNotes(String aiNotes) {
+		this.aiNotes = aiNotes;
+	}
 }

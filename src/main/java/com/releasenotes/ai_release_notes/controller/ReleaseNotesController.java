@@ -24,7 +24,7 @@ public class ReleaseNotesController {
         return service.getAllReleaseNotes();
     }
     
-    @GetMapping("/release-notes/latest")
+    @GetMapping("/latest")
     public ReleaseNotesEntity getLatestReleaseNotes() {
         return service.getLatestReleaseNotes();
     }
