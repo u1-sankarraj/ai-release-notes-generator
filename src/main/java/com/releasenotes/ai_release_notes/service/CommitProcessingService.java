@@ -21,7 +21,7 @@ public class CommitProcessingService {
 		this.openAIService = openAIService;
     }
 
-    public ReleaseNotesResponse process(List<Commit> commits) {
+    public Map<String, String> process(List<Commit> commits) {
     	System.out.println("🔥 PROCESS METHOD CALLED");
         Map<String, List<String>> categorisedCommits = new HashMap<>();
         categorisedCommits.put("Features", new ArrayList<>());
@@ -69,11 +69,11 @@ public class CommitProcessingService {
 
         // FORMAT OUTPUT
         String formattedNotes = buildReleaseNotes(response);
-        ReleaseNotesResponse aiOutput = openAIService.generateReleaseNotes(formattedNotes);
+        String aiOutput = openAIService.generateReleaseNotes(formattedNotes);
         
         
-        System.out.println("Foramtted Notes" + formattedNotes);
-        System.out.println("open AI op" + aiOutput);
+        System.out.println("Formatted Notes" + formattedNotes);
+        System.out.println("open AI op" + aiOutput.toString());
 
         // Save to DB (current approach)
         ReleaseNotesEntity entity = new ReleaseNotesEntity();
@@ -83,26 +83,9 @@ public class CommitProcessingService {
         entity.setDocs(String.join(", ", response.getDocs()));
         entity.setRefactors(String.join(", ", response.getRefactors()));
         entity.setOthers(String.join(", ", response.getOthers()));
-        
-        entity.setFeatures(String.join("AIIIIIIIIIIII,", 
-        	    Optional.ofNullable(aiOutput.getFeatures()).orElse(List.of())
-        	));
-        entity.setFixes(String.join("AIIIIIIIIIII,", 
-        	    Optional.ofNullable(aiOutput.getFixes()).orElse(List.of())
-        	));
-        entity.setDocs(String.join("AIIIIIIIIIIIIIII,", 
-        	    Optional.ofNullable(aiOutput.getDocs()).orElse(List.of())
-        	));
-        entity.setRefactors(String.join("AIIIIIIIIIII,", 
-        	    Optional.ofNullable(aiOutput.getRefactors()).orElse(List.of())
-        	));
-        entity.setOthers(String.join("AIIIIIIIIIIII,", 
-        	    Optional.ofNullable(aiOutput.getOthers()).orElse(List.of())
-        	));
-        
-        
+        entity.setAiNotes(aiOutput);
         repository.save(entity);
-        return aiOutput;
+        return Map.of("releasenotes",aiOutput);
     }
 
     // 🔥 CLEAN MESSAGE METHOD

@@ -1,5 +1,7 @@
 package com.releasenotes.ai_release_notes.webhook;
 
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.*;
 import com.releasenotes.ai_release_notes.model.GithubWebhookRequest;
 import com.releasenotes.ai_release_notes.model.ReleaseNotesResponse;
@@ -17,7 +19,7 @@ public class GithubWebhookController {
 	}
 
 	@PostMapping("/github")
-	public ReleaseNotesResponse receiveWebhook(@RequestBody GithubWebhookRequest request) {
+	public Map<String, String> receiveWebhook(@RequestBody GithubWebhookRequest request) {
 		return commitservice.process(request.getCommits());
 	}
 }
