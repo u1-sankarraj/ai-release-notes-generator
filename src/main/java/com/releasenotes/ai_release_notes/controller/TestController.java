@@ -1,24 +1,36 @@
 package com.releasenotes.ai_release_notes.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.releasenotes.ai_release_notes.service.GitHubService;
+
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/test")
 public class TestController {
 
-    @GetMapping("/test")
-    public String test() {
-        return "Backend is working";
-    }
-    
-    @PostMapping("/Post")
-    public String test1(@RequestBody String name) {
-    	System.out.println(name);
-		return "post mapping";
-    	
+    @Autowired
+    private GitHubService gitHubService;
+
+    @GetMapping("/release")
+    public String testRelease() {
+
+        String version = "v1.0." + System.currentTimeMillis();
+
+        String notes = """
+                ## 🚀 Test Release
+
+                - Feature: Login API added
+                - Fix: Authentication issue fixed
+                - Docs: README updated
+                """;
+
+        gitHubService.createRelease(version, notes);
+
+        return "Release triggered!";
     }
 }

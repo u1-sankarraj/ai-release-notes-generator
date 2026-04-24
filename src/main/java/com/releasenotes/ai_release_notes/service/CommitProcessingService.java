@@ -2,6 +2,8 @@ package com.releasenotes.ai_release_notes.service;
 
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.releasenotes.ai_release_notes.ai.OpenAIService;
@@ -13,16 +15,24 @@ import com.releasenotes.ai_release_notes.repository.ReleaseNotesRepository;
 @Service
 public class CommitProcessingService {
 
+    private static final Logger log = LoggerFactory.getLogger(CommitProcessingService.class);
+
+    private final GitHubService gitHubService;
     private final ReleaseNotesRepository repository;
     private final OpenAIService openAIService;
-    
-    public CommitProcessingService(ReleaseNotesRepository repository, OpenAIService openAIService) {
+
+    public CommitProcessingService(GitHubService gitHubService,
+                                   ReleaseNotesRepository repository,
+                                   OpenAIService openAIService) {
+        this.gitHubService = gitHubService;
         this.repository = repository;
-		this.openAIService = openAIService;
+        this.openAIService = openAIService;
     }
 
-    public ReleaseNotesResponse process(List<Commit> commits) {
-    	System.out.println("🔥 PROCESS METHOD CALLED");
+    public Map<String, String> process(List<Commit> commits) {
+
+        log.info("🔥 Processing started | commitCount={}", commits != null ? commits.size() : 0);
+
         Map<String, List<String>> categorisedCommits = new HashMap<>();
         categorisedCommits.put("Features", new ArrayList<>());
         categorisedCommits.put("Fixes", new ArrayList<>());
@@ -36,17 +46,15 @@ public class CommitProcessingService {
         typeMap.put("docs", "Docs");
         typeMap.put("fix", "Fixes");
 
-        // 🔥 MAIN LOOP (processing commits)
+        // 🔹 PROCESS COMMITS
         for (Commit c : commits) {
 
             String message = c.getMessage();
 
             String[] parts = message.split(":");
-
             String type = parts[0];
 
             String rawDescription = parts.length > 1 ? parts[1] : message;
-
             String description = cleanMessage(rawDescription);
 
             String category = typeMap.getOrDefault(type, "Others");
@@ -58,7 +66,9 @@ public class CommitProcessingService {
             }
         }
 
-        // Build response DTO
+        log.debug("Commit categorization completed");
+
+        // BUILD RESPONSE
         ReleaseNotesResponse response = new ReleaseNotesResponse();
 
         response.setFeatures(categorisedCommits.get("Features"));
@@ -67,15 +77,23 @@ public class CommitProcessingService {
         response.setRefactors(categorisedCommits.get("Refactors"));
         response.setOthers(categorisedCommits.get("Others"));
 
-        // FORMAT OUTPUT
+        // FORMAT
         String formattedNotes = buildReleaseNotes(response);
-        ReleaseNotesResponse aiOutput = openAIService.generateReleaseNotes(formattedNotes);
-        
-        
-        System.out.println("Foramtted Notes" + formattedNotes);
-        System.out.println("open AI op" + aiOutput);
 
-        // Save to DB (current approach)
+        log.debug("Formatted release notes generated");
+
+        // 🔥 AI CALL
+        log.info("🤖 Calling OpenAI service...");
+        String aiOutput = openAIService.generateReleaseNotes(formattedNotes);
+
+        if (aiOutput == null || aiOutput.isBlank()) {
+            log.error("AI output is empty — aborting save");
+            throw new RuntimeException("AI output is empty — not saving");
+        }
+
+        log.info("✅ AI response received");
+
+        // SAVE TO DB
         ReleaseNotesEntity entity = new ReleaseNotesEntity();
 
         entity.setFeatures(String.join(", ", response.getFeatures()));
@@ -83,29 +101,23 @@ public class CommitProcessingService {
         entity.setDocs(String.join(", ", response.getDocs()));
         entity.setRefactors(String.join(", ", response.getRefactors()));
         entity.setOthers(String.join(", ", response.getOthers()));
-        
-        entity.setFeatures(String.join("AIIIIIIIIIIII,", 
-        	    Optional.ofNullable(aiOutput.getFeatures()).orElse(List.of())
-        	));
-        entity.setFixes(String.join("AIIIIIIIIIII,", 
-        	    Optional.ofNullable(aiOutput.getFixes()).orElse(List.of())
-        	));
-        entity.setDocs(String.join("AIIIIIIIIIIIIIII,", 
-        	    Optional.ofNullable(aiOutput.getDocs()).orElse(List.of())
-        	));
-        entity.setRefactors(String.join("AIIIIIIIIIII,", 
-        	    Optional.ofNullable(aiOutput.getRefactors()).orElse(List.of())
-        	));
-        entity.setOthers(String.join("AIIIIIIIIIIII,", 
-        	    Optional.ofNullable(aiOutput.getOthers()).orElse(List.of())
-        	));
-        
-        
+        entity.setAiNotes(aiOutput);
+
         repository.save(entity);
-        return aiOutput;
+
+        log.info("💾 Release notes saved to DB");
+
+        // CREATE GITHUB RELEASE
+        String version = "v" + System.currentTimeMillis();
+
+        log.info("🚀 Creating GitHub release | version={}", version);
+        gitHubService.createRelease(version, aiOutput);
+
+        log.info("🎉 Processing completed successfully | version={}", version);
+
+        return Map.of("releasenotes", aiOutput);
     }
 
-    // 🔥 CLEAN MESSAGE METHOD
     private String cleanMessage(String message) {
 
         message = message.trim();
@@ -125,7 +137,6 @@ public class CommitProcessingService {
         return message;
     }
 
-    // 🔥 FORMATTER METHOD
     private String buildReleaseNotes(ReleaseNotesResponse response) {
 
         Map<String, List<String>> sections = new LinkedHashMap<>();
@@ -156,9 +167,7 @@ public class CommitProcessingService {
 
         return sb.toString();
     }
-    
-    
-    // GET APIs
+
     public List<ReleaseNotesEntity> getAllReleaseNotes() {
         return repository.findAll();
     }

@@ -23,8 +23,8 @@ public class OpenAIService {
 	public OpenAIService(@Value("${groq.api.key}") String apiKey) {
 		this.API_KEY = apiKey;
 	}
-
-	public ReleaseNotesResponse generateReleaseNotes(String input) {
+	
+	public String generateReleaseNotes(String input) {
 		System.out.println(API_KEY);
 		String url = "https://api.groq.com/openai/v1/chat/completions";
 
@@ -34,7 +34,82 @@ public class OpenAIService {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.setBearerAuth(API_KEY);
 
-		String prompt = "Convert the following release notes into professional format:\n\n" + input;
+		String prompt = """
+				You are a senior software release manager.
+
+				Your job is to transform raw git commit messages into HIGH-QUALITY, USER-FACING release notes similar to Jira, GitHub Releases, or enterprise SaaS products.
+
+				CRITICAL INSTRUCTIONS:
+
+				1. UNDERSTAND, DON'T REPEAT:
+				- Do NOT copy commit messages
+				- Interpret intent and rewrite meaningfully
+				- Combine related commits into a single point
+
+				2. MAINTAIN ORDER (VERY IMPORTANT):
+				- Preserve the logical progression of commits based on input order
+				- Earlier commits → foundational changes
+				- Later commits → enhancements/fixes
+				- Reflect evolution of the feature
+
+				3. GROUP INTELLIGENTLY:
+				Categorize into:
+				- Highlights (most important changes only, max 3-5)
+				- Features
+				- Improvements
+				- Bug Fixes
+				- Documentation
+				- Refactors
+				- Others
+
+				4. WRITE LIKE A PRODUCT:
+				- Focus on USER IMPACT, not code
+				- Use clear, professional language
+				- Each point should feel like a release note, not a commit
+
+				5. REMOVE NOISE:
+				- Ignore duplicates
+				- Ignore trivial commits
+				- Merge similar ones
+
+				6. KEEP IT CLEAN:
+				- Use bullet points
+				- Keep it concise but meaningful
+
+				7. ADD STYLE:
+				- Use light emojis for readability (not too many)
+				- Use proper markdown formatting
+
+				---
+
+				OUTPUT FORMAT (STRICT):
+
+				## 🚀 Highlights
+				- ...
+
+				## ✨ Features
+				- ...
+
+				## ⚡ Improvements
+				- ...
+
+				## 🐛 Bug Fixes
+				- ...
+
+				## 📚 Documentation
+				- ...
+
+				## 🔧 Refactors
+				- ...
+
+				## 📦 Others
+				- ...
+
+				---
+
+				INPUT COMMITS (ordered):
+
+				""" + input;
 
 		Map<String, Object> message = Map.of("role", "user", "content", prompt);
 
@@ -49,47 +124,12 @@ public class OpenAIService {
 		        .get(0)
 		        .getMessage()
 		        .getContent();
+		if (content == null || content.isBlank()) {
+		    throw new RuntimeException("AI returned empty response");
+		}
+		System.out.println(content+"dfdfsdfdsgsdge34567876543456789");
 		
-		ReleaseNotesResponse parsed = parse(content);
-		return parsed;
+		return content;
 	}
 	
-	public ReleaseNotesResponse parse(String content) {
-  
-        List<String> features = new ArrayList<>();
-        List<String> fixes = new ArrayList<>();
-        List<String> docs = new ArrayList<>();
-        List<String> refactors = new ArrayList<>();
-
-        String current = "";
-
-        for (String line : content.split("\n")) {
-
-            if (line.contains("Features")) current = "features";
-            else if (line.contains("Bug Fixes")) current = "fixes";
-            else if (line.contains("Documentation")) current = "docs";
-            else if (line.contains("Refactors")) current = "refactors";
-
-            else if (line.startsWith("*") || line.startsWith("-")) {
-                String value = line.replace("*", "").replace("-", "").trim();
-
-                switch (current) {
-                    case "features" -> features.add(value);
-                    case "fixes" -> fixes.add(value);
-                    case "docs" -> docs.add(value);
-                    case "refactors" -> refactors.add(value);
-                }
-            }
-        }
-
-        ReleaseNotesResponse res = new ReleaseNotesResponse();
-
-        res.setFeatures(new ArrayList<>());
-        res.setFixes(new ArrayList<>());
-        res.setDocs(new ArrayList<>());
-        res.setRefactors(new ArrayList<>());
-        res.setOthers(new ArrayList<>());
-
-        return res;
-    }
 }
