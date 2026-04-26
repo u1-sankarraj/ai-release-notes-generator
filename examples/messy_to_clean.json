@@ -1,0 +1,23 @@
+{
+  "raw_commits": [
+    "added login stuff",
+    "fix bug",
+    "update",
+    "some changes idk",
+    "FINAL commit before demo"
+  ],
+  "clean_output": {
+    "features": [
+      "Added user login functionality"
+    ],
+    "bug_fixes": [
+      "Fixed unspecified bug"
+    ],
+    "improvements": [
+      "General code improvements"
+    ],
+    "others": [
+      "Miscellaneous updates"
+    ]
+  }
+}

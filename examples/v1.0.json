@@ -1,0 +1,13 @@
+{
+  "version": "v1.0.0",
+  "summary": "Initial release with core commit parsing and basic release note generation.",
+  "features": [
+    "Initial commit parser",
+    "Basic categorization (feat, fix)"
+  ],
+  "bug_fixes": [],
+  "improvements": [],
+  "others": [
+    "Project setup"
+  ]
+}

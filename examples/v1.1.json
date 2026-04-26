@@ -1,0 +1,16 @@
+{
+  "version": "v1.1.0",
+  "summary": "Improved parsing and added structured JSON output.",
+  "features": [
+    "Structured JSON output"
+  ],
+  "bug_fixes": [
+    "Fixed parsing edge cases"
+  ],
+  "improvements": [
+    "Improved commit classification"
+  ],
+  "others": [
+    "Updated dependencies"
+  ]
+}

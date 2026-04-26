@@ -1,0 +1,16 @@
+{
+  "version": "v1.2.0",
+  "summary": "Added AI-powered summarization and performance improvements.",
+  "features": [
+    "AI-generated summaries"
+  ],
+  "bug_fixes": [
+    "Fixed null commit handling"
+  ],
+  "improvements": [
+    "30% faster processing"
+  ],
+  "others": [
+    "Docs update"
+  ]
+}
