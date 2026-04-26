@@ -1,0 +1,70 @@
+{
+  "project": "AI Release Notes Generator",
+  "repository": "github.com/your-username/ai-release-notes",
+  "version": "v1.2.0",
+  "release_date": "2026-04-25",
+
+  "summary": "This release introduces authentication, improves performance, and enhances commit parsing with better error handling.",
+
+  "stats": {
+    "total_commits": 12,
+    "contributors": 3,
+    "features_count": 2,
+    "bug_fixes_count": 2,
+    "improvements_count": 2,
+    "others_count": 2
+  },
+
+  "sections": {
+    "features": [
+      {
+        "title": "JWT Authentication",
+        "description": "Added secure user authentication using JWT tokens for API access."
+      },
+      {
+        "title": "GitHub API Integration",
+        "description": "Integrated GitHub REST API to automatically fetch commit history."
+      }
+    ],
+
+    "bug_fixes": [
+      {
+        "title": "Null Pointer Exception",
+        "description": "Fixed crash in commit parser when handling empty commit messages."
+      },
+      {
+        "title": "API Timeout Issue",
+        "description": "Improved retry mechanism for failed GitHub API calls."
+      }
+    ],
+
+    "improvements": [
+      {
+        "title": "Performance Optimization",
+        "description": "Reduced processing time by 30% using optimized data structures."
+      },
+      {
+        "title": "Logging Refactor",
+        "description": "Replaced basic logs with structured logging for better debugging."
+      }
+    ],
+
+    "others": [
+      {
+        "title": "Dependency Updates",
+        "description": "Upgraded project dependencies to latest stable versions."
+      },
+      {
+        "title": "Documentation",
+        "description": "Enhanced README with setup instructions and usage examples."
+      }
+    ]
+  },
+
+  "raw_commit_examples": [
+    "feat: add JWT authentication",
+    "fix: resolve null pointer in parser",
+    "perf: optimize commit processing",
+    "chore: update dependencies"
+  ]
+}
